@@ -7,7 +7,7 @@ const router =express.Router();
 
 
 router.get('/balance',authMiddleware,async (req,res)=>{
-  res.json({msg:"hi"})
+  
   const account = await Account.findOne({
     userId: req.userId
   });
