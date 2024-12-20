@@ -20,17 +20,16 @@ router.post('/signup',async(req, res)=>{
   
 
   if(!success){
-    return res.send(411).json({
-      msg:"Incorrect Inputs"
+    return res.status(400).json({
+      msg:"Email already taken/Incorrect Inputs"
     })
   }
-
   const existingUser = await User.findOne({
     username: req.body.username
   })
 
   if(existingUser){
-    return res.status(411).json({
+    return res.status(409).json({
       message: "Email already taken/Incorrect inputs"
     })
   }
@@ -68,8 +67,8 @@ router.post("/signin", async(req, res)=>{
   
 
   if(!success){
-    return res.send(411).json({
-      msg:"Incorrect Inputs"
+    return res.status(400).json({
+      msg:"Email already taken/Incorrect Inputs"
     })
   }
 
@@ -89,7 +88,7 @@ router.post("/signin", async(req, res)=>{
     return;
   }
 
-  res.status(411).json({
+  res.status(401).json({
     msg:"Error while logging in"
   })
 })
@@ -104,40 +103,40 @@ router.put("/",authMiddleware, async(req, res)=>{
   const{success}=
     updateBody.safeParse(req.body)
   if(!success){
-    res.status(411).json({
+    res.status(400).json({
       message:"Error while updating information"
     })
   }
 
-  await User.updateOne({_id:req.userId}, req.body);
+  await User.updateOne(req.body,{_id:req.userId});
 
   res.json({
     message:"Updated successfully"
   })
 })
 
-router.get("/bulk",(req, res)=>{
-  const filter  = req.query.filter ||"";
+router.get("/bulk", async (req, res) => {
+  const filter = req.query.filter || "";
 
-  const users = User.find({
-    $or:[{
-      firstName:{
-        "$regex":filter
-      }
-    },{
-        lastName:{
-          "$regex":filter
-        }
-      }
-    ]
+  const users = await User.find({
+      $or: [{
+          firstName: {
+              "$regex": filter
+          }
+      }, {
+          lastName: {
+              "$regex": filter
+          }
+      }]
   })
 
   res.json({
-    user: users.map(user=>({username: user.username,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      _id: user._id
-    }))
+      user: users.map(user => ({
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          _id: user._id
+      }))
   })
 })
 
